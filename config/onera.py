@@ -17,6 +17,12 @@ def getParams():
     p['twist'] = [0, 0] # twist angle of each airfoil (size: nP+1)
     p['rootChord'] = 0.8059
     # Box
+    p['xoBox'] = -3.5*p['rootChord']
+    p['xfBox'] = 4.5*p['rootChord']
+    p['yfBox'] = 2*sum(p['span'])
+    p['zoBox'] = -3.5*p['rootChord']
+    p['zfBox'] = 3.5*p['rootChord']
     # Wake
+    p['nSlope'] = 10 # number of airfoil TE points to compute wake slope
 
     return p

@@ -9,25 +9,27 @@
 
 import wing as w
 import box as b
+import wake as wk
 
 def main(_module, _output):
     # Get config
     p = getConfig(_module)
 
-    # Create wing
+    # Create wing, wake and bounding box
     wing = w.Wing(p['airfName'], p['span'], p['taper'], p['sweep'], p['dihedral'], p['twist'], p['rootChord'])
-    # Create box
-    box = b.Box(wing.chord[0], wing.b)
+    box = b.Box(p['xoBox'], p['xfBox'], p['yfBox'], p['zoBox'], p['zfBox'])
+    wake = wk.Wake(p['xoBox'], p['xfBox'], p['yfBox'], p['nSlope'], wing.spanPos)
     # Create interfaces
 
     # Write
+    createWdir()
     outFile = _output + '.geo'
     writeHeader(outFile, _module)
     wing.writeInfo(outFile)
     wing.writeOpts(outFile)
-    box.writeOpts(outFile)
     wing.writePoints(outFile)
     box.writePoints(outFile)
+    wake.writePoints(outFile)
 
     # Output
     print outFile, 'successfully created!'
@@ -43,8 +45,17 @@ def getConfig(_module):
     p = module.getParams()
     # Fix path
     for i in range(0, len(p['airfName'])):
-        p['airfName'][i] = os.path.abspath(os.path.dirname(_module)) + os.sep + p['airfPath'] + os.sep + p['airfName'][i]
+        p['airfName'][i] = os.path.join(os.path.abspath(os.path.dirname(_module)), p['airfPath'],p['airfName'][i])
     return p
+
+def createWdir():
+    import os
+    wdir = os.path.join(os.getcwd(), 'workspace')
+    print wdir
+    if not os.path.isdir(wdir):
+        print "creating", wdir
+        os.makedirs(wdir)
+    os.chdir(wdir)
 
 def writeHeader(fname, _module):
     import ntpath

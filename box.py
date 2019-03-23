@@ -13,34 +13,28 @@ import numpy as np
 #
 # Adrien Crovato
 class Box:
-    def __init__(self, rootChord, span):
-        # Default size and origin
-        self.xO = -3.5*rootChord
-        self.xF = (3.5+1.)*rootChord
-        self.yO = 0.
-        self.yF = 2*span
-        self.zO = -3.5*rootChord
-        self.zF = 3.5*rootChord
-        self.mshSize = 0.5*rootChord
+    def __init__(self, xO, xF, yF, zO, zF):
+        self.corners(xO, xF, yF, zO, zF)
 
-        #self.PtsN = np.arange()
-
-    def writeOpts(self, fname):
-        """Write box gmsh options
+    def corners(self, xO, xF, yF, zO, zF):
+        """Initialize default corner points
         """
-        file = open(fname, 'a')
-        file.write('// --- Box options ---\n')
-        file.write('DefineConstant[ xO = {{ {0:f}, Name "Box x-origin" }} ];\n'.format(self.xO))
-        file.write('DefineConstant[ xF = {{ {0:f}, Name "Box x-end" }} ];\n'.format(self.xF))
-        file.write('DefineConstant[ yO = {{ {0:f}, Name "Box y-end" }} ];\n'.format(self.yO))
-        file.write('DefineConstant[ zO = {{ {0:f}, Name "Box z-origin" }} ];\n'.format(self.zO))
-        file.write('DefineConstant[ zF = {{ {0:f}, Name "Box z-end" }} ];\n'.format(self.zF))
-        file.write('DefineConstant[ msF = {{ {0:f}, Name "Farfield mesh size" }} ];\n'.format(self.mshSize))
-        file.write('\n')
-        file.close()
+        self.pts = [np.array([[xF, 0., zO],
+                              [xO, 0., zO],
+                              [xO, 0., zF],
+                              [xF, 0., zF]]),
+                    np.array([[xF, yF, zO],
+                              [xO, yF, zO],
+                              [xO, yF, zF],
+                              [xF, yF, zF]])]
+        self.ptsN = [np.arange(5000, 5004), np.arange(5004, 5008)]
 
     def writePoints(self, fname):
         """Write box points
         """
-        #file.write('Point({0:d}) = {{{1:f},{2:f},{3:f}}};\n'.format(self.ptsN[i][j], self.pts[i][j,0], self.pts[i][j,1], self.pts[i][j,2]))
-        
+        file = open(fname, 'a')
+        file.write('// --- Box points ---\n')
+        for i in range(0, 2):
+            for j in range(0,4):
+                file.write('Point({0:d}) = {{{1:f},{2:f},{3:f},msF}};\n'.format(self.ptsN[i][j], self.pts[i][j,0], self.pts[i][j,1], self.pts[i][j,2]))
+        file.write('\n')

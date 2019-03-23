@@ -120,6 +120,7 @@ class Wing:
             file.write('DefineConstant[ msLe{0:1d} = {{ {1:f}, Name "leading edge mesh size on {2:1d}th spanwise station" }} ];\n'.format(i, self.chord[i]/100, i))
             file.write('DefineConstant[ msTe{0:1d} = {{ {1:f}, Name "trailing edge mesh size on {2:1d}th spanwise station" }} ];\n'.format(i, self.chord[i]/100, i))
             file.write('DefineConstant[ gr{0:1d} = {{ {1:f}, Name "growth ratio for {2:1d}th spanwise station" }} ];\n'.format(i, 1.5, i))
+            file.write('DefineConstant[ msF = {{ {0:f}, Name "Farfield mesh size" }} ];\n'.format(0.5*self.chord[0]))
         file.write('\n')
         file.close()
 
