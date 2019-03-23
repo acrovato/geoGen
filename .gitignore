@@ -1,0 +1,24 @@
+# Misc
+core
+*.pyc
+*.*~
+
+# OS
+.DS_Store
+*.swp
+*.bak
+
+# Workspace
+workspace
+
+# Gmsh
+*.geo
+*.msh
+*.opt
+
+# IDE
+.project
+.pydevproject
+.settings
+.vscode
+.vscode/*
