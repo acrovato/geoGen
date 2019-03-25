@@ -41,3 +41,5 @@ class Wake:
         file.write('// --- Wake points ---\n')
         for i in range(0, self.pts[0].shape[0]):
             file.write('Point({0:d}) = {{{1:f},{2:f},{3:f},msF}};\n'.format(self.ptsN[0][i], self.pts[0][i,0], self.pts[0][i,1], self.pts[0][i,2]))
+        file.write('\n')
+        file.close()

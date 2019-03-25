@@ -24,12 +24,18 @@ def main(_module, _output):
     # Write
     createWdir()
     outFile = _output + '.geo'
+    # misc
     writeHeader(outFile, _module)
     wing.writeInfo(outFile)
     wing.writeOpts(outFile)
+    # points
     wing.writePoints(outFile)
     box.writePoints(outFile)
     wake.writePoints(outFile)
+    # lines
+    wing.writeLines(outFile)
+    # surfaces
+    wing.writeSurfaces(outFile)
 
     # Output
     print outFile, 'successfully created!'
