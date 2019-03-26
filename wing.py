@@ -72,7 +72,7 @@ class Wing:
             self.pts[i][:, 2] = self.pts[i][:, 2] + sum(np.tan(dihedral[0:i-1])*span[0:i-1])
         # get separation points numbering
         self.sptsNl = []
-        self.sptsNg = []
+        self.sptsNg = [] # todo: remove since global index can be recovered from local index: ptsN[local]
         for i in range(0, self.n):
             numb = self.specPts(i)
             self.sptsNl.append(numb)

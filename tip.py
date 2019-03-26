@@ -40,7 +40,7 @@ class Tip:
         orgn = np.min(self.wing.pts[-1][:,0])
         aft = np.argmin(np.abs(self.pts[0][:,0]-orgn - sepAft*self.wing.chord[-1]))
         fwd = np.argmin(np.abs(self.pts[0][:,0]-orgn - sepFwd*self.wing.chord[-1]))
-        self.sptsNl = [np.array([aft, fwd])]
+        self.sptsN = [np.array([aft, fwd])]
 
 ## Handle cutoff wingtip data
 #
@@ -64,13 +64,13 @@ class CTip(Tip):
         """
         file = open(fname, 'a')
         file.write('// --- Wingtip points ---\n')
-        for i in range(0, self.sptsNl[0][0]):
+        for i in range(0, self.sptsN[0][0]):
             file.write('Point({0:d}) = {{{1:f},{2:f},{3:f}}};\n'.format(self.ptsN[0][i], self.pts[0][i,0], self.pts[0][i,1], self.pts[0][i,2]))
-        file.write('Point({0:d}) = {{{1:f},{2:f},{3:f},gr{4:d}*msTe{4:d}}};\n'.format(self.sptsNl[0][0]+self.ptsN[0][0], self.pts[0][self.sptsNl[0][0],0], self.pts[0][self.sptsNl[0][0],1],self.pts[0][self.sptsNl[0][0],2], self.wing.n-1))
-        for i in range(self.sptsNl[0][0]+1, self.sptsNl[0][1]):
+        file.write('Point({0:d}) = {{{1:f},{2:f},{3:f},gr{4:d}*msTe{4:d}}};\n'.format(self.sptsN[0][0]+self.ptsN[0][0], self.pts[0][self.sptsN[0][0],0], self.pts[0][self.sptsN[0][0],1],self.pts[0][self.sptsN[0][0],2], self.wing.n-1))
+        for i in range(self.sptsN[0][0]+1, self.sptsN[0][1]):
             file.write('Point({0:d}) = {{{1:f},{2:f},{3:f}}};\n'.format(self.ptsN[0][i], self.pts[0][i,0], self.pts[0][i,1], self.pts[0][i,2]))
-        file.write('Point({0:d}) = {{{1:f},{2:f},{3:f},gr{4:d}*msLe{4:d}}};\n'.format(self.sptsNl[0][1]+self.ptsN[0][0], self.pts[0][self.sptsNl[0][1],0], self.pts[0][self.sptsNl[0][1],1],self.pts[0][self.sptsNl[0][1],2], self.wing.n-1))
-        for i in range(self.sptsNl[0][1]+1, self.ptsN[0].shape[0]):
+        file.write('Point({0:d}) = {{{1:f},{2:f},{3:f},gr{4:d}*msLe{4:d}}};\n'.format(self.sptsN[0][1]+self.ptsN[0][0], self.pts[0][self.sptsN[0][1],0], self.pts[0][self.sptsN[0][1],1],self.pts[0][self.sptsN[0][1],2], self.wing.n-1))
+        for i in range(self.sptsN[0][1]+1, self.ptsN[0].shape[0]):
             file.write('Point({0:d}) = {{{1:f},{2:f},{3:f}}};\n'.format(self.ptsN[0][i], self.pts[0][i,0], self.pts[0][i,1], self.pts[0][i,2]))
         file.write('\n')
         file.close()
@@ -82,22 +82,22 @@ class CTip(Tip):
         file.write('// --- Wingtip lines ---\n')
         # midlines
         file.write('Spline({0:d}) = {{{1:d},'.format(self.linN[0][0], self.wing.ptsN[-1][self.wing.sptsNl[-1][0]]))
-        for i in range(0, self.sptsNl[0][0]):
+        for i in range(0, self.sptsN[0][0]):
             file.write('{0:d}, '.format(self.ptsN[0][i]))
-        file.write('{0:d}}};\n'.format(self.ptsN[0][self.sptsNl[0][0]]))
-        file.write('Spline({0:d}) = {{{1:d},'.format(self.linN[0][1], self.ptsN[0][self.sptsNl[0][0]]))
-        for i in range(self.sptsNl[0][0]+1, self.sptsNl[0][1]):
+        file.write('{0:d}}};\n'.format(self.ptsN[0][self.sptsN[0][0]]))
+        file.write('Spline({0:d}) = {{{1:d},'.format(self.linN[0][1], self.ptsN[0][self.sptsN[0][0]]))
+        for i in range(self.sptsN[0][0]+1, self.sptsN[0][1]):
             file.write('{0:d}, '.format(self.ptsN[0][i]))
-        file.write('{0:d}}};\n'.format(self.ptsN[0][self.sptsNl[0][1]]))
-        file.write('Spline({0:d}) = {{{1:d},'.format(self.linN[0][2], self.ptsN[0][self.sptsNl[0][1]]))
-        for i in range(self.sptsNl[0][1]+1, self.ptsN[0].shape[0]):
+        file.write('{0:d}}};\n'.format(self.ptsN[0][self.sptsN[0][1]]))
+        file.write('Spline({0:d}) = {{{1:d},'.format(self.linN[0][2], self.ptsN[0][self.sptsN[0][1]]))
+        for i in range(self.sptsN[0][1]+1, self.ptsN[0].shape[0]):
             file.write('{0:d}, '.format(self.ptsN[0][i]))
         file.write('{0:d}}};\n'.format(self.wing.ptsN[-1][self.wing.sptsNl[-1][3]]))
         # to-midlines
-        file.write('Line({0:d}) = {{{1:d},{2:d}}};\n'.format(self.linN[0][3], self.wing.sptsNg[-1][1], self.ptsN[0][self.sptsNl[0][0]]))
-        file.write('Line({0:d}) = {{{1:d},{2:d}}};\n'.format(self.linN[0][4], self.wing.sptsNg[-1][2], self.ptsN[0][self.sptsNl[0][1]]))
-        file.write('Line({0:d}) = {{{1:d},{2:d}}};\n'.format(self.linN[0][5], self.wing.sptsNg[-1][4], self.ptsN[0][self.sptsNl[0][1]]))
-        file.write('Line({0:d}) = {{{1:d},{2:d}}};\n'.format(self.linN[0][6], self.wing.sptsNg[-1][5], self.ptsN[0][self.sptsNl[0][0]]))
+        file.write('Line({0:d}) = {{{1:d},{2:d}}};\n'.format(self.linN[0][3], self.wing.sptsNg[-1][1], self.ptsN[0][self.sptsN[0][0]]))
+        file.write('Line({0:d}) = {{{1:d},{2:d}}};\n'.format(self.linN[0][4], self.wing.sptsNg[-1][2], self.ptsN[0][self.sptsN[0][1]]))
+        file.write('Line({0:d}) = {{{1:d},{2:d}}};\n'.format(self.linN[0][5], self.wing.sptsNg[-1][4], self.ptsN[0][self.sptsN[0][1]]))
+        file.write('Line({0:d}) = {{{1:d},{2:d}}};\n'.format(self.linN[0][6], self.wing.sptsNg[-1][5], self.ptsN[0][self.sptsN[0][0]]))
         file.write('\n')
         file.close()
 

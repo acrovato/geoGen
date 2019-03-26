@@ -23,7 +23,7 @@ def main(_module, _output):
     else:
         tip = t.RTip(wing)
     box = b.Box(p['xoBox'], p['xfBox'], p['yfBox'], p['zoBox'], p['zfBox'])
-    wake = wk.Wake(p['xoBox'], p['xfBox'], p['yfBox'], p['nSlope'], wing.spanPos)
+    wake = wk.Wake(p['xoBox'], p['xfBox'], p['yfBox'], p['nSlope'], wing, tip)
     # Create interfaces
 
     # Write
@@ -41,6 +41,7 @@ def main(_module, _output):
     # lines
     wing.writeLines(outFile)
     tip.writeLines(outFile)
+    wake.writeLines(outFile)
     # surfaces
     wing.writeSurfaces(outFile)
     tip.writeSurfaces(outFile)
