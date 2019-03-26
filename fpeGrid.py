@@ -8,6 +8,7 @@
 # Adrien Crovato
 
 import wing as w
+import tip as t
 import box as b
 import wake as wk
 
@@ -15,8 +16,12 @@ def main(_module, _output):
     # Get config
     p = getConfig(_module)
 
-    # Create wing, wake and bounding box
+    # Create wing, wingtip, wake and bounding box
     wing = w.Wing(p['airfName'], p['span'], p['taper'], p['sweep'], p['dihedral'], p['twist'], p['rootChord'])
+    if p['coWingtip']:
+        tip = t.CTip(wing)
+    else:
+        tip = t.RTip(wing)
     box = b.Box(p['xoBox'], p['xfBox'], p['yfBox'], p['zoBox'], p['zfBox'])
     wake = wk.Wake(p['xoBox'], p['xfBox'], p['yfBox'], p['nSlope'], wing.spanPos)
     # Create interfaces
@@ -30,12 +35,15 @@ def main(_module, _output):
     wing.writeOpts(outFile)
     # points
     wing.writePoints(outFile)
+    tip.writePoints(outFile)
     box.writePoints(outFile)
     wake.writePoints(outFile)
     # lines
     wing.writeLines(outFile)
+    tip.writeLines(outFile)
     # surfaces
     wing.writeSurfaces(outFile)
+    tip.writeSurfaces(outFile)
 
     # Output
     print outFile, 'successfully created!'

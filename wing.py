@@ -16,8 +16,8 @@ class Wing:
     def __init__(self, filenames, span, taper, sweep, dihedral, twist, rootChord):
         # Number of airfoils
         self.n = len(filenames)
-        # Maximum number of points per airfoil
-        self.__maxPts = 500
+        if self.n > 10:
+            raise Exception('Wing: read {0:d} airfoils but a maximum of 10 is suppored!\n'.format(self.n))
 
         # Convert degrees to radians
         sweep = [x * np.pi/180 for x in sweep]
@@ -29,14 +29,6 @@ class Wing:
 
         # Create airfoil points and indices
         self.airfoil(filenames, span, twist, sweep, dihedral)
-        #tip()
-
-        # find special numbers
-
-        # Line numbering
-        #self.linN = [np.zeros([6,1])]*(n-1)
-        # Surface numering
-        #self.surN = [np.zeros([6,1])]*(n-1)
 
     def shape(self, span, taper, rootChord):
         """Compute basic shape parameters of the wing
@@ -64,7 +56,7 @@ class Wing:
             size = aPts.shape[0]
             aPts = np.hstack((aPts, self.spanPos[i]*np.ones([size,1])))
             aPts[:,[1,2]] = np.fliplr(aPts[:,[1,2]])
-            aIdx = np.transpose(np.arange(i*self.__maxPts+1, i*self.__maxPts+1+size))
+            aIdx = np.transpose(np.arange(i*500+1, i*500+1+size))
             self.pts.append(aPts)
             self.ptsN.append(aIdx)
         # transform coordinates
@@ -84,7 +76,7 @@ class Wing:
         for i in range(0, self.n):
             numb = self.specPts(i)
             self.sptsNl.append(numb)
-            self.sptsNg.append(numb+i*self.__maxPts+1)
+            self.sptsNg.append(numb+i*500+1)
 
         # define line numbering (6 lines per airfoil: 1-60)
         self.linaN = []
@@ -116,12 +108,6 @@ class Wing:
         teL = le + np.argmin(np.abs(self.pts[idx][le:-1,0]-self.pts[idx][le,0] - sepAft*self.chord[idx]))
 
         return np.array([te , teU, leU, le, leL, teL])
-
-    def tip(self):
-        """Create tip points
-        """
-        self.tip = []
-        self.tipN = []
 
     def read(self,fname):
         """Read data from file and stroe in matrix
@@ -196,52 +182,51 @@ class Wing:
             for j in range(self.sptsNl[i][5]+1, self.ptsN[i].shape[0]-1):
                 file.write('Point({0:d}) = {{{1:f},{2:f},{3:f}}};\n'.format(self.ptsN[i][j], self.pts[i][j,0], self.pts[i][j,1], self.pts[i][j,2]))
             file.write('\n')
-        file.write('// -- Tip\n')
         file.write('\n')
         file.close()
 
     def writeLines(self, fname):
-            """Write wing lines
-            """
-            file = open(fname, 'a')
-            file.write('// --- Wing lines ---\n')
-            # airfoil lines
-            for i in range(0, self.n):
-                file.write('// -- Airfoil {0:d}\n'.format(i))
-                for j in range(0, self.linaN[i].shape[0]-1):
-                    file.write('Spline({0:d}) = {{'.format(self.linaN[i][j]))
-                    for k in range(self.sptsNg[i][j], self.sptsNg[i][j+1]-1):
-                        file.write('{0:d}, '.format(k))
-                    file.write('{0:d}'.format(self.sptsNg[i][j+1]))
-                    file.write('};\n')
-                file.write('Spline({0:d}) = {{'.format(self.linaN[i][-1]))
-                for k in range(self.sptsNg[i][self.linaN[i].shape[0]-1], self.sptsNg[i][0]+self.ptsN[i].shape[0]-1):
+        """Write wing lines
+        """
+        file = open(fname, 'a')
+        file.write('// --- Wing lines ---\n')
+        # airfoil lines
+        for i in range(0, self.n):
+            file.write('// -- Airfoil {0:d}\n'.format(i))
+            for j in range(0, self.linaN[i].shape[0]-1):
+                file.write('Spline({0:d}) = {{'.format(self.linaN[i][j]))
+                for k in range(self.sptsNg[i][j], self.sptsNg[i][j+1]-1):
                     file.write('{0:d}, '.format(k))
-                file.write('{0:d}'.format(self.sptsNg[i][0]))
+                file.write('{0:d}'.format(self.sptsNg[i][j+1]))
                 file.write('};\n')
-            # planform lines
-            for i in range(0, self.n-1):
-                file.write('// -- Planform {0:d}\n'.format(i))
-                for j in range(0, self.linpN[i].shape[0]):
-                    file.write('Line({0:d}) = {{{1:d},{2:d}}};\n'.format(self.linpN[i][j], self.sptsNg[i][j], self.sptsNg[i+1][j]))
-                file.write('\n')
+            file.write('Spline({0:d}) = {{'.format(self.linaN[i][-1]))
+            for k in range(self.sptsNg[i][self.linaN[i].shape[0]-1], self.sptsNg[i][0]+self.ptsN[i].shape[0]-1):
+                file.write('{0:d}, '.format(k))
+            file.write('{0:d}'.format(self.sptsNg[i][0]))
+            file.write('};\n')
+        # planform lines
+        for i in range(0, self.n-1):
+            file.write('// -- Planform {0:d}\n'.format(i))
+            for j in range(0, self.linpN[i].shape[0]):
+                file.write('Line({0:d}) = {{{1:d},{2:d}}};\n'.format(self.linpN[i][j], self.sptsNg[i][j], self.sptsNg[i+1][j]))
             file.write('\n')
-            file.close()
+        file.write('\n')
+        file.close()
 
     def writeSurfaces(self, fname):
-            """Write wing line loops and surfaces
-            """
-            file = open(fname, 'a')
-            file.write('// --- Wing line loops and surfaces ---\n')
-            for i in range(0, self.n-1):
-                file.write('// -- Planform {0:d}\n'.format(i))
-                for j in range(0, self.surN[i].shape[0]):
-                    file.write('Line Loop({0:d}) = {{{1:d},{2:d},{3:d},{4:d}}};\n'.format(self.surN[i][j], self.linaN[i][j], self.linpN[i][np.mod(j+1,self.linpN[i].shape[0])], -self.linaN[i+1][j], -self.linpN[i][j]))
-                for j in range(0, self.surN[i].shape[0]):
-                    file.write('Surface({0:d}) = {{{0:d}}};\n'.format(self.surN[i][j]))
-            file.write('\n')
-            file.close()
+        """Write wing line loops and surfaces
+        """
+        file = open(fname, 'a')
+        file.write('// --- Wing line loops and surfaces ---\n')
+        for i in range(0, self.n-1):
+            file.write('// -- Planform {0:d}\n'.format(i))
+            for j in range(0, self.surN[i].shape[0]):
+                file.write('Line Loop({0:d}) = {{{1:d},{2:d},{3:d},{4:d}}};\n'.format(self.surN[i][j], self.linaN[i][j], self.linpN[i][np.mod(j+1,self.linpN[i].shape[0])], -self.linaN[i+1][j], -self.linpN[i][j]))
+            for j in range(0, self.surN[i].shape[0]):
+                file.write('Surface({0:d}) = {{{0:d}}};\n'.format(-self.surN[i][j]))
+        file.write('\n')
+        file.close()
 
     def writePhysical(self):
-            """Write wing physical groups
-            """
+        """Write wing physical groups
+        """

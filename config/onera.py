@@ -15,7 +15,8 @@ def getParams():
     p['sweep'] = [30] # leading edge sweep of each planform (size: nP) 
     p['dihedral'] = [0] # dihedral angle of each planform (size: nP)
     p['twist'] = [0, 0] # twist angle of each airfoil (size: nP+1)
-    p['rootChord'] = 0.8059
+    p['rootChord'] = 0.8059 # root chord
+    p['coWingtip'] = True # cut-off wingtip (not supported yet)
     # Box
     p['xoBox'] = -3.5*p['rootChord']
     p['xfBox'] = 4.5*p['rootChord']
