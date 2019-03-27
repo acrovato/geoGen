@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-## @package FPE grid creator
+## @package GeoGen (CFD basic grid creator)
 #
-# Create a rectangular unstructured tetrahedral grid around a wing
-# to be meshed with gmsh for Flow Full Potential solver
+# Create an unstructured tetrahedral grid around a wing
+# to be meshed with gmsh for Flow or SU2 CFD solvers
 # Adrien Crovato
 
 import numpy as np
@@ -25,12 +25,12 @@ class Wing:
         twist = [x * np.pi/180 for x in twist]
 
         # Compute wing shape parameters
-        self.shape(span, taper, rootChord)
+        self.compShape(span, taper, rootChord)
 
         # Create airfoil points and indices
-        self.airfoil(filenames, span, twist, sweep, dihedral)
+        self.initData(filenames, span, twist, sweep, dihedral)
 
-    def shape(self, span, taper, rootChord):
+    def compShape(self, span, taper, rootChord):
         """Compute basic shape parameters of the wing
         """
         areas = []
@@ -44,9 +44,10 @@ class Wing:
             self.spanPos.append(self.spanPos[i-1]+span[i-1])
         self.S = sum(areas)
         self.b = sum(span)
+        self.AR = 2 * self.b*self.b/self.S
 
-    def airfoil(self, filenames, span, twist, sweep, dihedral):
-        """Read, transform and store airfoil points
+    def initData(self, filenames, span, twist, sweep, dihedral):
+        """Read, transform and store airfoil points, and define numbering
         """
         self.pts = []
         self.ptsN = []
@@ -84,7 +85,7 @@ class Wing:
             self.linaN.append(np.arange(i*6+1, (i+1)*6+1))
         # define line numbering (6 lines per wing station: 61-114)
         self.linpN = []
-        for i in range(0, self.n):
+        for i in range(0, self.n-1):
             self.linpN.append(np.arange(i*6+61, (i+1)*6+61))
         # define surface numbering (6 per wing station: 1-55)
         self.surN = []
@@ -134,6 +135,7 @@ class Wing:
         file.write('\n')
         file.write('// Half-wing area: {0:f}\n'.format(self.S))
         file.write('// Half-wing span: {0:f}\n'.format(self.b))
+        file.write('// Full-wing aspect ratio: {0:f}\n'.format(self.AR))
         file.write('\n')
         file.close()
 
@@ -181,7 +183,6 @@ class Wing:
             file.write('Point({0:d}) = {{{1:f},{2:f},{3:f},gr{4:d}*msTe{4:d}}};\n'.format(self.ptsN[i][self.sptsNl[i][5]], self.pts[i][self.sptsNl[i][5],0], self.pts[i][self.sptsNl[i][5],1], self.pts[i][self.sptsNl[i][5],2], i))
             for j in range(self.sptsNl[i][5]+1, self.ptsN[i].shape[0]-1):
                 file.write('Point({0:d}) = {{{1:f},{2:f},{3:f}}};\n'.format(self.ptsN[i][j], self.pts[i][j,0], self.pts[i][j,1], self.pts[i][j,2]))
-            file.write('\n')
         file.write('\n')
         file.close()
 
@@ -209,7 +210,6 @@ class Wing:
             file.write('// -- Planform {0:d}\n'.format(i))
             for j in range(0, self.linpN[i].shape[0]):
                 file.write('Line({0:d}) = {{{1:d},{2:d}}};\n'.format(self.linpN[i][j], self.sptsNg[i][j], self.sptsNg[i+1][j]))
-            file.write('\n')
         file.write('\n')
         file.close()
 
@@ -223,10 +223,29 @@ class Wing:
             for j in range(0, self.surN[i].shape[0]):
                 file.write('Line Loop({0:d}) = {{{1:d},{2:d},{3:d},{4:d}}};\n'.format(self.surN[i][j], self.linaN[i][j], self.linpN[i][np.mod(j+1,self.linpN[i].shape[0])], -self.linaN[i+1][j], -self.linpN[i][j]))
             for j in range(0, self.surN[i].shape[0]):
-                file.write('Surface({0:d}) = {{{0:d}}};\n'.format(-self.surN[i][j]))
+                file.write('Surface({0:d}) = {{-{0:d}}};\n'.format(self.surN[i][j]))
         file.write('\n')
         file.close()
 
-    def writePhysical(self):
+    def writePhysical(self, fname):
         """Write wing physical groups
         """
+        import os
+        file = open(fname, 'a')
+        file.write('// --- Wing physical groups ---\n')
+        file.write('Physical Surface("wing") = {')
+        for i in range(0, self.n-1):
+            for j in range(0, 3):
+                file.write('{0:d},'.format(self.surN[i][j]))
+        file.seek(-1, os.SEEK_END)
+        file.truncate()
+        file.write('};\n')
+        file.write('Physical Surface("wing_") = {')
+        for i in range(0, self.n-1):
+            for j in range(3, 6):
+                file.write('{0:d},'.format(self.surN[i][j]))
+        file.seek(-1, os.SEEK_END)
+        file.truncate()
+        file.write('};\n')
+        file.write('\n')
+        file.close()

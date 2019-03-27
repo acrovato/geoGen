@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-## @package FPE grid creator
+## @package GeoGen (CFD basic grid creator)
 #
-# Create a rectangular unstructured tetrahedral grid around a wing
-# to be meshed with gmsh for Flow Full Potential solver
+# Create an unstructured tetrahedral grid around a wing
+# to be meshed with gmsh for Flow or SU2 CFD solvers
 # Adrien Crovato
 
 import wing as w
 import tip as t
-import box as b
 import wake as wk
+import box as b
 
 def main(_module, _output):
     # Get config
@@ -22,32 +22,45 @@ def main(_module, _output):
         tip = t.CTip(wing)
     else:
         tip = t.RTip(wing)
-    box = b.Box(p['xoBox'], p['xfBox'], p['yfBox'], p['zoBox'], p['zfBox'])
     wake = wk.Wake(p['xoBox'], p['xfBox'], p['yfBox'], p['nSlope'], wing, tip)
-    # Create interfaces
+    box = b.Box(p['xoBox'], p['xfBox'], p['yfBox'], p['zoBox'], p['zfBox'], wing, tip, wake)
 
-    # Write
+    # Switch to workspace and write
     createWdir()
     outFile = _output + '.geo'
     # misc
     writeHeader(outFile, _module)
     wing.writeInfo(outFile)
+    tip.writeInfo(outFile)
+    box.writeInfo(outFile)
     wing.writeOpts(outFile)
     # points
     wing.writePoints(outFile)
     tip.writePoints(outFile)
-    box.writePoints(outFile)
     wake.writePoints(outFile)
+    box.writePoints(outFile)
     # lines
     wing.writeLines(outFile)
     tip.writeLines(outFile)
     wake.writeLines(outFile)
+    box.writeLines(outFile)
     # surfaces
     wing.writeSurfaces(outFile)
     tip.writeSurfaces(outFile)
+    wake.writeSurfaces(outFile)
+    box.writeSurfaces(outFile)
+    # volumes
+    box.writeVolumes(outFile)
+    # physical
+    wing.writePhysical(outFile)
+    tip.writePhysical(outFile)
+    wake.writePhysical(outFile)
+    box.writePhysical(outFile)
+    # mesh options
+    writeOpts(outFile, p['coWingtip'])
 
-    # Output
-    print outFile, 'successfully created!'
+    # Printout
+    printInfo(outFile)   
 
     # eof
     print ''
@@ -66,7 +79,6 @@ def getConfig(_module):
 def createWdir():
     import os
     wdir = os.path.join(os.getcwd(), 'workspace')
-    print wdir
     if not os.path.isdir(wdir):
         print "creating", wdir
         os.makedirs(wdir)
@@ -82,6 +94,28 @@ def writeHeader(fname, _module):
     file.write('/* ULiege, 2018-2019                      */\n')
     file.write('/******************************************/\n\n')
     file.close()
+
+def writeOpts(fname, cowtp):
+    """Write misc options
+    """
+    import os
+    file = open(fname, 'a')
+    file.write('// --- Misc Meshing options ---\n')
+    file.write('Mesh.Algorithm = 5; // Delaunay\n')
+    if not cowtp:
+        file.write('MeshAlgorithm Surface {{73,74}} = 1; // Mesh-adapt\n') # hard-coded, not good
+    file.write('Mesh.Algorithm3D = 2; // New Delaunay\n')
+    file.write('Mesh.OptimizeNetgen = 1;\n')
+    file.write('Mesh.Smoothing = 10;\n')
+    file.write('Mesh.SmoothNormals = 1;\n')
+    file.write('\n')
+    file.close()
+
+def printInfo(fname):
+    """Print info
+    """
+    import os
+    print os.path.abspath(os.path.join(os.getcwd(), fname)), 'has been successfully written!'
 
 if __name__ == "__main__":
     # Arguments parser

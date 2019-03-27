@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-## @package FPE grid creator
+## @package GeoGen (CFD basic grid creator)
 #
-# Create a rectangular unstructured tetrahedral grid around a wing
-# to be meshed with gmsh for Flow Full Potential solver
+# Create an unstructured tetrahedral grid around a wing
+# to be meshed with gmsh for Flow or SU2 CFD solvers
 # Adrien Crovato
 
 import numpy as np
@@ -17,10 +17,10 @@ class Wake:
         self.wing = _wing
         self.tip = _tip
 
-        self.midplane(xO, xF, yF, nSlope)
+        self.initData(xO, xF, yF, nSlope)
 
-    def midplane(self, xO, xF, yF, nSlope):
-        """Compute wake points and define numbering
+    def initData(self, xO, xF, yF, nSlope):
+        """Initialize data, define numbering
         """
         n = self.wing.n
         pts = np.zeros([n*2+6,3])
@@ -73,5 +73,50 @@ class Wake:
         file.write('Line({0:d}) = {{{1:d},{2:d}}};\n'.format(self.linN[1][self.wing.n+3], self.wing.sptsNg[-1][3], self.ptsN[0][self.wing.n+4]))
         for i in range(0, self.wing.n):
             file.write('Line({0:d}) = {{{1:d},{2:d}}};\n'.format(self.linN[1][-self.wing.n+i], self.wing.sptsNg[-i-1][3], self.ptsN[0][-self.wing.n+i]))
+        file.write('\n')
+        file.close()
+
+    def writeSurfaces(self, fname):
+        """Write wake surfaces
+        """
+        file = open(fname, 'a')
+        file.write('// --- Wake surfaces ---\n')
+        # line loops
+        file.write('// -- Wake\n')
+        for i in range(0, self.wing.n-1):
+            file.write('Line Loop({0:d}) = {{{1:d},{2:d},{3:d},{4:d}}};\n'.format(self.surN[0][i], self.linN[1][i], self.linN[0][i], -self.linN[1][i+1], -self.wing.linpN[i][0]))
+        file.write('// -- Side\n')
+        file.write('Line Loop({0:d}) = {{{1:d},{2:d},{3:d},{4:d}}};\n'.format(self.surN[0][self.wing.n-1], self.linN[1][self.wing.n-1], self.linN[0][self.wing.n-1], self.linN[0][self.wing.n], -self.linN[1][self.wing.n]))
+        for i in range(0, 3):
+            file.write('Line Loop({0:d}) = {{{1:d},{2:d},{3:d},{4:d}}};\n'.format(self.surN[0][self.wing.n+i], self.linN[1][self.wing.n+i], self.linN[0][self.wing.n+i+1], -self.linN[1][self.wing.n+i+1], -self.tip.linN[0][i]))    
+        file.write('Line Loop({0:d}) = {{{1:d},{2:d},{3:d},{4:d}}};\n'.format(self.surN[0][self.wing.n+3], self.linN[1][self.wing.n+3], self.linN[0][self.wing.n+4], self.linN[0][self.wing.n+5], -self.linN[1][self.wing.n+4]))
+        file.write('// -- Front\n')
+        for i in range(0, self.wing.n-1):
+            file.write('Line Loop({0:d}) = {{{1:d},{2:d},{3:d},{4:d}}};\n'.format(self.surN[0][-self.wing.n+1+i], self.linN[1][-self.wing.n+i], self.linN[0][-self.wing.n+1+i], -self.linN[1][-self.wing.n+1+i], self.wing.linpN[-1-i][3]))
+        # surfaces
+        for i in range(0, self.surN[0].shape[0]):
+            file.write('Surface({0:d}) = {{{0:d}}};\n'.format(self.surN[0][i]))
+        file.write('\n')
+        file.close()
+
+    def writePhysical(self, fname):
+        """Write wake physical groups
+        """
+        import os
+        file = open(fname, 'a')
+        file.write('// --- Wake physical groups ---\n')
+        file.write('Physical Line("wakeTip") = {{{0:d}}};\n'.format(self.linN[1][self.wing.n-1]))
+        file.write('Physical Line("teTip") = {{{0:d}'.format(self.linN[1][self.wing.n-1]))
+        for i in range(0, self.wing.n-1):
+            file.write('{0:d},'.format(self.wing.linpN[i][0]))
+        file.seek(-1, os.SEEK_END)
+        file.truncate()
+        file.write('};\n')
+        file.write('Physical Surface("wake") = {')
+        for j in range(0, self.wing.n-1):
+            file.write('{0:d},'.format(self.surN[0][j]))
+        file.seek(-1, os.SEEK_END)
+        file.truncate()
+        file.write('};\n')
         file.write('\n')
         file.close()

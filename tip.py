@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-## @package FPE grid creator
+## @package GeoGen (CFD basic grid creator)
 #
-# Create a rectangular unstructured tetrahedral grid around a wing
-# to be meshed with gmsh for Flow Full Potential solver
+# Create an unstructured tetrahedral grid around a wing
+# to be meshed with gmsh for Flow or SU2 CFD solvers
 # Adrien Crovato
 
 import numpy as np
@@ -16,10 +16,10 @@ class Tip:
     def __init__(self, _wing):
         self.wing = _wing
 
-        self.midline()
+        self.initData()
 
-    def midline(self):
-        """Create tip points, define line and surface numbering
+    def initData(self):
+        """Initialize data, define numbering
         """
         # build mean line
         self.pts = [(np.zeros([(self.wing.pts[-1].shape[0]-3)/2,3]))]
@@ -113,13 +113,30 @@ class CTip(Tip):
         file.write('Line Loop({0:d}) = {{{1:d},{2:d},{3:d},{4:d}}};\n'.format(self.surN[0][4], self.wing.linaN[-1][4], self.linN[0][6], self.linN[0][1], -self.linN[0][5]))
         file.write('Line Loop({0:d}) = {{{1:d},{2:d},{3:d}}};\n'.format(self.surN[0][5], self.wing.linaN[-1][5], self.linN[0][0], -self.linN[0][6]))
         for i in range(0, self.surN[0].shape[0]):
-                file.write('Surface({0:d}) = {{{0:d}}};\n'.format(-self.surN[0][i]))
+                file.write('Surface({0:d}) = {{-{0:d}}};\n'.format(self.surN[0][i]))
         file.write('\n')
         file.close()
 
-    def writePhysical(self):
+    def writePhysical(self, fname):
         """Write wing physical groups
         """
+        import os
+        file = open(fname, 'a')
+        file.write('// --- Wingtip physical groups ---\n')
+        file.write('Physical Surface("wing") += {')
+        for j in range(0, 3):
+            file.write('{0:d},'.format(self.surN[0][j]))
+        file.seek(-1, os.SEEK_END)
+        file.truncate()
+        file.write('};\n')
+        file.write('Physical Surface("wing_") += {')
+        for j in range(3, 6):
+            file.write('{0:d},'.format(self.surN[0][j]))
+        file.seek(-1, os.SEEK_END)
+        file.truncate()
+        file.write('};\n')
+        file.write('\n')
+        file.close()
 
 ## Handle rounded wingtip data
 #
