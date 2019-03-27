@@ -19,7 +19,7 @@ before_install:
   - sudo ln -s $PWD/gmsh-4.2.2-Linux64/bin/gmsh /usr/bin/gmsh
 
 script:
-  - python geoGen.py -m config/rae -o workspace/rae
+  - python geoGen.py -m config/rae -o rae
   - ls workspace 
   - gmsh -3 workspace/rae.geo -o workspace/rae.msh
 
