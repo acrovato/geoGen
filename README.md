@@ -1,16 +1,18 @@
-# GridGen
+# GeoGen
 Adrien Crovato  
 ULiege, 2018-2019  
 
+[![Run Status](https://api.shippable.com/projects/5c98c1405142dd0007ecd6c0/badge?branch=master)]()
+
 ## Features and limitations
 
-### What is GridGen?
+### What is GeoGen?
 This is it!
 
 ### Cite us!
 If you use this work, please acknowledge the authors:  
 ```text 
-"GridGen - a python/gmsh automated grid generator for Full Potential solvers" by Adrien Crovato, University of Liege
+"GeoGen - a python/gmsh automated geometry generator for Flow and SU2 CFD solvers" by Adrien Crovato, University of Liege
 ```  
 
 ## Usage
