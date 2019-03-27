@@ -11,13 +11,16 @@ branches:
 before_install:
   # python
   - sudo apt-get install -qq python-dev python-numpy
+  # add dist-package to pythonpath (for numpy)
+  - export PYTHONPATH="${PYTHONPATH}:/usr/lib/python2.7/dist-packages"
   # gmsh
   - wget http://gmsh.info/bin/Linux/gmsh-4.2.2-Linux64.tgz
   - tar -xzvf gmsh-4.2.2-Linux64.tgz
   - sudo ln -s $PWD/gmsh-4.2.2-Linux64/bin/gmsh /usr/bin/gmsh
 
 script:
-  - python -m config/rae -o rae
+  - python -m config/rae -o workspace/rae
+  - ls workspace 
   - gmsh -3 workspace/rae.geo -o workspace/rae.msh
 
 integrations:
