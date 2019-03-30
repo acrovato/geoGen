@@ -18,6 +18,7 @@ def getParams():
     p['rootChord'] = 1.0 # root chord
     p['coWingtip'] = True # cut-off wingtip (not supported yet)
     # Box
+    p['domType'] = 'box' # domain type ('sphere' or 'box')
     p['xoBox'] = -3.5*p['rootChord']
     p['xfBox'] = 4.5*p['rootChord']
     p['yfBox'] = 2*sum(p['span'])

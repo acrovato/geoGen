@@ -1,6 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
+
+''' 
+Copyright 2019 University of Liege
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License. 
+'''
+
 ## @package GeoGen (CFD basic grid creator)
 #
 # Create an unstructured tetrahedral grid around a wing
@@ -9,13 +25,134 @@
 
 import numpy as np
 
+## Generic domain class
+#
+# Adrien Crovato
+class Domain:
+    def __init__(self, _wing, _tip):
+        self.wing = _wing
+        self.tip = _tip
+
+## Handle sphere data
+#
+# Adrien Crovato
+class Sphere(Domain):
+    def __init__(self, R, _wing, _tip):
+        Domain.__init__(self, _wing, _tip)
+        self.initData(R)
+
+    def initData(self, R):
+        """Initialize data, define numbering
+        """
+        self.pts = [np.array([[R+self.wing.chord[0], 0., 0.],
+                              [0., 0., R],
+                              [-R+self.wing.chord[0], 0., 0.],
+                              [0., 0., -R]]),
+                    np.array([[self.wing.chord[0], R, 0.]])]
+        self.ptsN = [np.arange(5000, 5004), np.array([5004])]
+
+        # lines (2*4 lines: 191-194 and 195-198)
+        self.linN = [np.arange(191, 195), np.arange(195, 199)]
+
+        # surface (5 surfaces: 111-115)
+        self.surN = [np.arange(111, 116)]
+
+    def writeInfo(self, fname):
+        """Write sphere geometrical parameters
+        """
+        file = open(fname, 'a')
+        file.write('// --- Domain geometry ---\n')
+        file.write('// Sphere radius: {0:f}\n'.format(self.pts[0][0,0]-self.wing.pts[0][0,0]))
+        file.write('\n')
+        file.close()
+
+    def writeOpts(self, fname):
+        """Write sphere gmsh options
+        """
+        file = open(fname, 'a')
+        file.write('// --- Domain options ---\n')
+        file.write('DefineConstant[ msF = {{ {0:f}, Name "Farfield mesh size" }} ];\n'.format(10*self.wing.chord[0]))
+        file.write('\n')
+        file.close()
+
+    def writePoints(self, fname):
+        """Write sphere points
+        """
+        file = open(fname, 'a')
+        file.write('// --- Sphere points ---\n')
+        for j in range(0,4):
+            file.write('Point({0:d}) = {{{1:f},{2:f},{3:f},msF}};\n'.format(self.ptsN[0][j], self.pts[0][j,0], self.pts[0][j,1], self.pts[0][j,2]))
+        file.write('Point({0:d}) = {{{1:f},{2:f},{3:f},msF}};\n'.format(self.ptsN[1][0], self.pts[1][0,0], self.pts[1][0,1], self.pts[1][0,2]))
+        file.write('\n')
+        file.close()
+
+    def writeLines(self, fname):
+        """Write sphere lines
+        """
+        file = open(fname, 'a')
+        file.write('// --- Sphere lines ---\n')
+        for j in range(0, 4):
+            file.write('Circle({0:d}) = {{{1:d},{2:d},{3:d}}};\n'.format(self.linN[0][j], self.ptsN[0][j], self.wing.ptsN[0][0], self.ptsN[0][np.mod(j+1,4)]))
+        for j in range(0, 4):
+            file.write('Circle({0:d}) = {{{1:d},{2:d},{3:d}}};\n'.format(self.linN[1][j], self.ptsN[0][j], self.wing.ptsN[0][0], self.ptsN[1][0]))
+        file.write('\n')
+        file.close()
+
+    def writeSurfaces(self, fname):
+        """Write sphere surfaces
+        """
+        file = open(fname, 'a')
+        file.write('// --- Sphere surfaces ---\n')
+        # line loops
+        for j in range(0, 4):
+            file.write('Line Loop({0:d}) = {{{1:d},{2:d},{3:d}}};\n'.format(self.surN[0][j], self.linN[0][j], self.linN[1][np.mod(j+1,4)], -self.linN[1][j]))
+        file.write('Line Loop({0:d}) = {{{1:d},{2:d},{3:d},{4:d}}};\n'.format(self.surN[0][-1], self.linN[0][0], self.linN[0][1], self.linN[0][2], self.linN[0][3]))
+        file.write('Line Loop({0:d}) = {{{1:d},{2:d},{3:d},{4:d},{5:d},{6:d}}};\n'.format(self.surN[0][-1]+1, self.wing.linaN[0][0], self.wing.linaN[0][1], self.wing.linaN[0][2], self.wing.linaN[0][3], self.wing.linaN[0][4], self.wing.linaN[0][5]))
+        # surfaces
+        for j in range(0, 4):
+            file.write('Surface({0:d}) = {{{0:d}}};\n'.format(self.surN[0][j]))
+        file.write('Plane Surface({0:d}) = {{{0:d},{1:d}}};\n'.format(self.surN[0][-1], self.surN[0][-1]+1))
+        file.write('\n')
+        file.close()
+
+    def writeVolumes(self, fname):
+        """Write computational volume
+        """
+        file = open(fname, 'a')
+        file.write('// --- Computational volumes ---\n')
+        # surface loops
+        file.write('Surface Loop({0:d}) = {{'.format(1))
+        for i in range(0, self.wing.n-1):
+            for j in range(0, 6):
+                file.write('{0:d},'.format(self.wing.surN[i][j]))
+        for j in range(0, 6):
+            file.write('{0:d},'.format(self.tip.surN[0][j]))
+        for j in range(0, 4):
+            file.write('{0:d},'.format(self.surN[0][j]))
+        file.write('{0:d}}};\n'.format(self.surN[0][-1]))
+        
+        # volumes
+        file.write('Volume({0:d}) = {{{0:d}}};\n'.format(1))
+        file.write('\n')
+        file.close()
+
+    def writePhysical(self, fname):
+        """Write sphere physical groups
+        """
+        file = open(fname, 'a')
+        file.write('// --- Box physical groups ---\n')
+        file.write('Physical Surface("symmetry") = {{{0:d}}};\n'.format(self.surN[0][-1]))
+        file.write('Physical Surface("farfield") = {{{0:d},{1:d},{2:d},{3:d}}};\n'.format(self.surN[0][0],self.surN[0][1],self.surN[0][2],self.surN[0][3]))
+        file.write('Physical Volume("field") = {{{0:d}}};\n'.format(1))
+        file.write('\n')
+        file.close()
+
 ## Handle box data
 #
 # Adrien Crovato
-class Box:
+class Box(Domain):
     def __init__(self, xO, xF, yF, zO, zF, _wing, _tip, _wake):
-        self.wing = _wing
-        self.tip = _tip
+        Domain.__init__(self, _wing, _tip)
         self.wake = _wake
 
         self.initData(xO, xF, yF, zO, zF)
@@ -48,6 +185,15 @@ class Box:
         file.write('// Box length: {0:f}\n'.format(self.pts[0][0,0]-self.pts[0][1,0]))
         file.write('// Box width: {0:f}\n'.format(self.pts[1][0,1]))
         file.write('// Box height: {0:f}\n'.format(self.pts[0][0,2]-self.pts[0][3,2]))
+        file.write('\n')
+        file.close()
+
+    def writeOpts(self, fname):
+        """Write box gmsh options
+        """
+        file = open(fname, 'a')
+        file.write('// --- Domain options ---\n')
+        file.write('DefineConstant[ msF = {{ {0:f}, Name "Farfield mesh size" }} ];\n'.format(0.5*self.wing.chord[0]))
         file.write('\n')
         file.close()
 
