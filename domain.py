@@ -44,12 +44,13 @@ class Sphere(Domain):
     def initData(self, R):
         """Initialize data, define numbering
         """
-        self.pts = [np.array([[R+self.wing.chord[0], 0., 0.],
+        self.pts = [np.array([[self.wing.chord[0], 0., 0.]]),
+                    np.array([[R+self.wing.chord[0], 0., 0.],
                               [0., 0., R],
                               [-R+self.wing.chord[0], 0., 0.],
                               [0., 0., -R]]),
                     np.array([[self.wing.chord[0], R, 0.]])]
-        self.ptsN = [np.arange(5000, 5004), np.array([5004])]
+        self.ptsN = [np.array([5001]), np.arange(5002, 5006), np.array([5007])]
 
         # lines (2*4 lines: 191-194 and 195-198)
         self.linN = [np.arange(191, 195), np.arange(195, 199)]
@@ -62,7 +63,7 @@ class Sphere(Domain):
         """
         file = open(fname, 'a')
         file.write('// --- Domain geometry ---\n')
-        file.write('// Sphere radius: {0:f}\n'.format(self.pts[0][0,0]-self.wing.pts[0][0,0]))
+        file.write('// Sphere radius: {0:f}\n'.format(self.pts[0][0,0]-self.wing.pts[1][0,0]))
         file.write('\n')
         file.close()
 
@@ -80,9 +81,12 @@ class Sphere(Domain):
         """
         file = open(fname, 'a')
         file.write('// --- Sphere points ---\n')
+        file.write('// --- Center\n')
+        file.write('Point({0:d}) = {{{1:f},{2:f},{3:f},msF}};\n'.format(self.ptsN[0][0], self.pts[0][0,0], self.pts[0][0,1], self.pts[0][0,2]))
+        file.write('// --- Farfield\n')
         for j in range(0,4):
-            file.write('Point({0:d}) = {{{1:f},{2:f},{3:f},msF}};\n'.format(self.ptsN[0][j], self.pts[0][j,0], self.pts[0][j,1], self.pts[0][j,2]))
-        file.write('Point({0:d}) = {{{1:f},{2:f},{3:f},msF}};\n'.format(self.ptsN[1][0], self.pts[1][0,0], self.pts[1][0,1], self.pts[1][0,2]))
+            file.write('Point({0:d}) = {{{1:f},{2:f},{3:f},msF}};\n'.format(self.ptsN[1][j], self.pts[1][j,0], self.pts[1][j,1], self.pts[1][j,2]))
+        file.write('Point({0:d}) = {{{1:f},{2:f},{3:f},msF}};\n'.format(self.ptsN[2][0], self.pts[2][0,0], self.pts[2][0,1], self.pts[2][0,2]))
         file.write('\n')
         file.close()
 
@@ -92,9 +96,9 @@ class Sphere(Domain):
         file = open(fname, 'a')
         file.write('// --- Sphere lines ---\n')
         for j in range(0, 4):
-            file.write('Circle({0:d}) = {{{1:d},{2:d},{3:d}}};\n'.format(self.linN[0][j], self.ptsN[0][j], self.wing.ptsN[0][0], self.ptsN[0][np.mod(j+1,4)]))
+            file.write('Circle({0:d}) = {{{1:d},{2:d},{3:d}}};\n'.format(self.linN[0][j], self.ptsN[1][j], self.ptsN[0][0], self.ptsN[1][np.mod(j+1,4)]))
         for j in range(0, 4):
-            file.write('Circle({0:d}) = {{{1:d},{2:d},{3:d}}};\n'.format(self.linN[1][j], self.ptsN[0][j], self.wing.ptsN[0][0], self.ptsN[1][0]))
+            file.write('Circle({0:d}) = {{{1:d},{2:d},{3:d}}};\n'.format(self.linN[1][j], self.ptsN[1][j], self.ptsN[0][0], self.ptsN[2][0]))
         file.write('\n')
         file.close()
 
@@ -168,7 +172,7 @@ class Box(Domain):
                               [xO, yF, zF],
                               [xO, yF, zO],
                               [xF, yF, zO]])]
-        self.ptsN = [np.arange(5000, 5004), np.arange(5004, 5008)]
+        self.ptsN = [np.arange(5001, 5005), np.arange(5005, 5009)]
 
         # line numbering (2*6 x lines: 191-203) AND (4 y lines: 205-209)
         self.linxN = [np.arange(191, 197), np.arange(197, 204)]

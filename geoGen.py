@@ -33,7 +33,7 @@ def main(_module, _output):
     p = getConfig(_module)
 
     # Create wing, wingtip, wake and bounding domain
-    wing = w.Wing(p['airfName'], p['span'], p['taper'], p['sweep'], p['dihedral'], p['twist'], p['rootChord'])
+    wing = w.Wing(p['airfName'], p['span'], p['taper'], p['sweep'], p['dihedral'], p['twist'], p['rootChord'], p['offset'])
     if p['coWingtip']:
         tip = t.CTip(wing)
     else:

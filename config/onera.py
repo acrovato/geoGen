@@ -16,6 +16,7 @@ def getParams():
     p['dihedral'] = [0] # dihedral angle of each planform (size: nP)
     p['twist'] = [0, 0] # twist angle of each airfoil (size: nP+1)
     p['rootChord'] = 0.8059 # root chord
+    p['offset'] = [0., 0.] # x and z offset at the leading edge root
     p['coWingtip'] = True # cut-off wingtip (not supported yet)
     # Sphere
     p['domType'] = 'sphere' # domain type ('sphere' or 'box')

@@ -29,7 +29,7 @@ import numpy as np
 #
 # Adrien Crovato
 class Wing:
-    def __init__(self, filenames, span, taper, sweep, dihedral, twist, rootChord):
+    def __init__(self, filenames, span, taper, sweep, dihedral, twist, rootChord, offset):
         # Number of airfoils
         self.n = len(filenames)
         if self.n > 10:
@@ -44,7 +44,7 @@ class Wing:
         self.compShape(span, taper, rootChord)
 
         # Create airfoil points and indices
-        self.initData(filenames, span, twist, sweep, dihedral)
+        self.initData(filenames, span, twist, sweep, dihedral, offset)
 
     def compShape(self, span, taper, rootChord):
         """Compute basic shape parameters of the wing
@@ -62,7 +62,7 @@ class Wing:
         self.b = sum(span)
         self.AR = 2 * self.b*self.b/self.S
 
-    def initData(self, filenames, span, twist, sweep, dihedral):
+    def initData(self, filenames, span, twist, sweep, dihedral, offset):
         """Read, transform and store airfoil points, and define numbering
         """
         self.pts = []
@@ -87,6 +87,10 @@ class Wing:
             self.pts[i][:, 0] = self.pts[i][:, 0] + np.min(self.pts[i-1][:, 0]) + np.tan(sweep[i-1])*span[i-1]
             # apply dihedral (translatation)
             self.pts[i][:, 2] = self.pts[i][:, 2] + sum(np.tan(dihedral[0:i-1])*span[0:i-1])
+        for i in range(0, self.n):
+            # apply offset
+            self.pts[i][:, 0] += offset[0] # x
+            self.pts[i][:, 2] += offset[1] # z
         # get separation points numbering
         self.sptsNl = []
         self.sptsNg = [] # todo: remove since global index can be recovered from local index: ptsN[local]

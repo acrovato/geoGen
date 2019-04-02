@@ -45,6 +45,7 @@ Wing definition:
  - dihedral: array (size: nP) of dihedral angle of each planform of the wing
  - twist: array (size: nP+1) of twist angle of each airfoil of the wing
  - rootChord: root chord (scalar) of the wing
+ - offset: array of x and z offset (size: 2) applied to the leading edge of the root section
  - coWingtip: boolean, True for cutoof wingtip, Fasle for rounded wingtip (not supported yet)
 Domain definition:
  - domType: string, box for box-shaped domain or shpere for shperical-shaped domain
