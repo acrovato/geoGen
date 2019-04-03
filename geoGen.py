@@ -80,7 +80,7 @@ def main(_module, _output):
     wake.writePhysical(outFile)
     dom.writePhysical(outFile)
     # mesh options
-    writeOpts(outFile, p['coWingtip'])
+    writeOpts(outFile, tip.surN)
 
     # Printout
     printInfo(outFile)   
@@ -118,15 +118,14 @@ def writeHeader(fname, _module):
     file.write('/******************************************/\n\n')
     file.close()
 
-def writeOpts(fname, cowtp):
+def writeOpts(fname, tipSur):
     """Write misc options
     """
     import os
     file = open(fname, 'a')
     file.write('// --- Misc Meshing options ---\n')
     file.write('Mesh.Algorithm = 5; // Delaunay\n')
-    if not cowtp:
-        file.write('MeshAlgorithm Surface {{73,74}} = 1; // Mesh-adapt\n') # hard-coded, not good
+    file.write('MeshAlgorithm Surface {{{0:d},{1:d}}} = 1; // Mesh-adapt\n').format(tipSur[0][2], tipSur[0][3])
     file.write('Mesh.Algorithm3D = 2; // New Delaunay\n')
     file.write('Mesh.OptimizeNetgen = 1;\n')
     file.write('Mesh.Smoothing = 10;\n')

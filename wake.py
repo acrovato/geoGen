@@ -146,7 +146,7 @@ class Wake(GWake):
         file = open(fname, 'a')
         file.write('// --- Wake physical groups ---\n')
         file.write('Physical Line("wakeTip") = {{{0:d}}};\n'.format(self.linN[1][self.wing.n-1]))
-        file.write('Physical Line("teTip") = {{{0:d}'.format(self.linN[1][self.wing.n-1]))
+        file.write('Physical Line("teTip") = {{{0:d},'.format(self.linN[1][self.wing.n-1]))
         for i in range(0, self.wing.n-1):
             file.write('{0:d},'.format(self.wing.linpN[i][0]))
         file.seek(-1, os.SEEK_END)
