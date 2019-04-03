@@ -6,7 +6,7 @@ python:
 
 branches:
   only:
-    - master
+    - ci_shippable
 
 before_install:
   # python
@@ -19,8 +19,9 @@ before_install:
   - sudo ln -s $PWD/gmsh-4.2.2-Linux64/bin/gmsh /usr/bin/gmsh
 
 script:
+  - python geoGen.py -m config/onera -o onera
+  - gmsh -3 workspace/onera.geo -o workspace/onera.msh
   - python geoGen.py -m config/rae -o rae
-  - ls workspace 
   - gmsh -3 workspace/rae.geo -o workspace/rae.msh
 
 integrations:

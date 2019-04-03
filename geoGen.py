@@ -1,6 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
+
+''' 
+Copyright 2019 University of Liege
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License. 
+'''
+
 ## @package GeoGen (CFD basic grid creator)
 #
 # Create an unstructured tetrahedral grid around a wing
@@ -10,20 +26,26 @@
 import wing as w
 import tip as t
 import wake as wk
-import box as b
+import domain as d
 
 def main(_module, _output):
     # Get config
     p = getConfig(_module)
 
-    # Create wing, wingtip, wake and bounding box
-    wing = w.Wing(p['airfName'], p['span'], p['taper'], p['sweep'], p['dihedral'], p['twist'], p['rootChord'])
+    # Create wing, wingtip, wake and bounding domain
+    wing = w.Wing(p['airfName'], p['span'], p['taper'], p['sweep'], p['dihedral'], p['twist'], p['rootChord'], p['offset'])
     if p['coWingtip']:
         tip = t.CTip(wing)
     else:
         tip = t.RTip(wing)
-    wake = wk.Wake(p['xoBox'], p['xfBox'], p['yfBox'], p['nSlope'], wing, tip)
-    box = b.Box(p['xoBox'], p['xfBox'], p['yfBox'], p['zoBox'], p['zfBox'], wing, tip, wake)
+    if p['domType'] == 'box':
+        wake = wk.Wake(p['xoBox'], p['xfBox'], p['yfBox'], p['nSlope'], wing, tip)
+        dom = d.Box(p['xoBox'], p['xfBox'], p['yfBox'], p['zoBox'], p['zfBox'], wing, tip, wake)
+    elif p['domType'] == 'sphere':
+        wake = wk.GWake()
+        dom = d.Sphere(p['rSphere'], wing, tip)
+    else:
+        raise Exception('"domType" parameter can be either "box" or "sphere", but', p['domType'], 'was given!\n')
 
     # Switch to workspace and write
     createWdir()
@@ -32,32 +54,33 @@ def main(_module, _output):
     writeHeader(outFile, _module)
     wing.writeInfo(outFile)
     tip.writeInfo(outFile)
-    box.writeInfo(outFile)
+    dom.writeInfo(outFile)
     wing.writeOpts(outFile)
+    dom.writeOpts(outFile)
     # points
     wing.writePoints(outFile)
     tip.writePoints(outFile)
     wake.writePoints(outFile)
-    box.writePoints(outFile)
+    dom.writePoints(outFile)
     # lines
     wing.writeLines(outFile)
     tip.writeLines(outFile)
     wake.writeLines(outFile)
-    box.writeLines(outFile)
+    dom.writeLines(outFile)
     # surfaces
     wing.writeSurfaces(outFile)
     tip.writeSurfaces(outFile)
     wake.writeSurfaces(outFile)
-    box.writeSurfaces(outFile)
+    dom.writeSurfaces(outFile)
     # volumes
-    box.writeVolumes(outFile)
+    dom.writeVolumes(outFile)
     # physical
     wing.writePhysical(outFile)
     tip.writePhysical(outFile)
     wake.writePhysical(outFile)
-    box.writePhysical(outFile)
+    dom.writePhysical(outFile)
     # mesh options
-    writeOpts(outFile, p['coWingtip'])
+    writeOpts(outFile, tip.surN)
 
     # Printout
     printInfo(outFile)   
@@ -95,15 +118,14 @@ def writeHeader(fname, _module):
     file.write('/******************************************/\n\n')
     file.close()
 
-def writeOpts(fname, cowtp):
+def writeOpts(fname, tipSur):
     """Write misc options
     """
     import os
     file = open(fname, 'a')
     file.write('// --- Misc Meshing options ---\n')
     file.write('Mesh.Algorithm = 5; // Delaunay\n')
-    if not cowtp:
-        file.write('MeshAlgorithm Surface {{73,74}} = 1; // Mesh-adapt\n') # hard-coded, not good
+    file.write('MeshAlgorithm Surface {{{0:d},{1:d}}} = 1; // Mesh-adapt\n'.format(tipSur[0][2], tipSur[0][3]))
     file.write('Mesh.Algorithm3D = 2; // New Delaunay\n')
     file.write('Mesh.OptimizeNetgen = 1;\n')
     file.write('Mesh.Smoothing = 10;\n')
@@ -115,7 +137,15 @@ def printInfo(fname):
     """Print info
     """
     import os
+    print '*' * 79
+    print '* geoGen'
+    print '* Adrien Crovato'
+    print '* ULiege, 2018-2019'
+    print '* Distributed under Apache license 2.0'
+    print '*' * 79
     print os.path.abspath(os.path.join(os.getcwd(), fname)), 'has been successfully written!'
+    print 'Visual file check in gmsh recommended before further use!'
+    print '*' * 79
 
 if __name__ == "__main__":
     # Arguments parser

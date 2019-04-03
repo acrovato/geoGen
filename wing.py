@@ -1,6 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
+
+''' 
+Copyright 2019 University of Liege
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License. 
+'''
+
 ## @package GeoGen (CFD basic grid creator)
 #
 # Create an unstructured tetrahedral grid around a wing
@@ -13,7 +29,7 @@ import numpy as np
 #
 # Adrien Crovato
 class Wing:
-    def __init__(self, filenames, span, taper, sweep, dihedral, twist, rootChord):
+    def __init__(self, filenames, span, taper, sweep, dihedral, twist, rootChord, offset):
         # Number of airfoils
         self.n = len(filenames)
         if self.n > 10:
@@ -28,7 +44,7 @@ class Wing:
         self.compShape(span, taper, rootChord)
 
         # Create airfoil points and indices
-        self.initData(filenames, span, twist, sweep, dihedral)
+        self.initData(filenames, span, twist, sweep, dihedral, offset)
 
     def compShape(self, span, taper, rootChord):
         """Compute basic shape parameters of the wing
@@ -46,7 +62,7 @@ class Wing:
         self.b = sum(span)
         self.AR = 2 * self.b*self.b/self.S
 
-    def initData(self, filenames, span, twist, sweep, dihedral):
+    def initData(self, filenames, span, twist, sweep, dihedral, offset):
         """Read, transform and store airfoil points, and define numbering
         """
         self.pts = []
@@ -57,7 +73,7 @@ class Wing:
             size = aPts.shape[0]
             aPts = np.hstack((aPts, self.spanPos[i]*np.ones([size,1])))
             aPts[:,[1,2]] = np.fliplr(aPts[:,[1,2]])
-            aIdx = np.transpose(np.arange(i*500+1, i*500+1+size))
+            aIdx = np.arange(i*500+1, i*500+1+size)
             self.pts.append(aPts)
             self.ptsN.append(aIdx)
         # transform coordinates
@@ -71,6 +87,10 @@ class Wing:
             self.pts[i][:, 0] = self.pts[i][:, 0] + np.min(self.pts[i-1][:, 0]) + np.tan(sweep[i-1])*span[i-1]
             # apply dihedral (translatation)
             self.pts[i][:, 2] = self.pts[i][:, 2] + sum(np.tan(dihedral[0:i-1])*span[0:i-1])
+        for i in range(0, self.n):
+            # apply offset
+            self.pts[i][:, 0] += offset[0] # x
+            self.pts[i][:, 2] += offset[1] # z
         # get separation points numbering
         self.sptsNl = []
         self.sptsNg = [] # todo: remove since global index can be recovered from local index: ptsN[local]
@@ -148,7 +168,6 @@ class Wing:
             file.write('DefineConstant[ msLe{0:1d} = {{ {1:f}, Name "leading edge mesh size on {2:1d}th spanwise station" }} ];\n'.format(i, self.chord[i]/100, i))
             file.write('DefineConstant[ msTe{0:1d} = {{ {1:f}, Name "trailing edge mesh size on {2:1d}th spanwise station" }} ];\n'.format(i, self.chord[i]/100, i))
             file.write('DefineConstant[ gr{0:1d} = {{ {1:f}, Name "growth ratio for {2:1d}th spanwise station" }} ];\n'.format(i, 1.5, i))
-            file.write('DefineConstant[ msF = {{ {0:f}, Name "Farfield mesh size" }} ];\n'.format(0.5*self.chord[0]))
         file.write('\n')
         file.close()
 

@@ -1,6 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
+
+''' 
+Copyright 2019 University of Liege
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License. 
+'''
+
 ## @package GeoGen (CFD basic grid creator)
 #
 # Create an unstructured tetrahedral grid around a wing
@@ -9,10 +25,34 @@
 
 import numpy as np
 
+## Generic wake class (does nothing)
+#
+# Adrien Crovato
+class GWake:
+    def __init__(self):
+        """Desc.
+        """
+
+    def writePoints(self, fname):
+        """Desc.
+        """
+
+    def writeLines(self, fname):
+        """Desc.
+        """
+
+    def writeSurfaces(self, fname):
+        """Desc.
+        """
+
+    def writePhysical(self, fname):
+        """Desc.
+        """
+
 ## Manage wake data
 #
 # Adrien Crovato
-class Wake:
+class Wake(GWake):
     def __init__(self, xO, xF, yF, nSlope, _wing, _tip):
         self.wing = _wing
         self.tip = _tip
@@ -106,7 +146,7 @@ class Wake:
         file = open(fname, 'a')
         file.write('// --- Wake physical groups ---\n')
         file.write('Physical Line("wakeTip") = {{{0:d}}};\n'.format(self.linN[1][self.wing.n-1]))
-        file.write('Physical Line("teTip") = {{{0:d}'.format(self.linN[1][self.wing.n-1]))
+        file.write('Physical Line("teTip") = {{{0:d},'.format(self.linN[1][self.wing.n-1]))
         for i in range(0, self.wing.n-1):
             file.write('{0:d},'.format(self.wing.linpN[i][0]))
         file.seek(-1, os.SEEK_END)
