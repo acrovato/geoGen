@@ -125,7 +125,7 @@ def writeOpts(fname, tipSur):
     file = open(fname, 'a')
     file.write('// --- Misc Meshing options ---\n')
     file.write('Mesh.Algorithm = 5; // Delaunay\n')
-    file.write('MeshAlgorithm Surface {{{0:d},{1:d}}} = 1; // Mesh-adapt\n').format(tipSur[0][2], tipSur[0][3])
+    file.write('MeshAlgorithm Surface {{{0:d},{1:d}}} = 1; // Mesh-adapt\n'.format(tipSur[0][2], tipSur[0][3]))
     file.write('Mesh.Algorithm3D = 2; // New Delaunay\n')
     file.write('Mesh.OptimizeNetgen = 1;\n')
     file.write('Mesh.Smoothing = 10;\n')
