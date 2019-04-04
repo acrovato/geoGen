@@ -86,7 +86,7 @@ class Wing:
             # apply sweep (translation)
             self.pts[i][:, 0] = self.pts[i][:, 0] + np.min(self.pts[i-1][:, 0]) + np.tan(sweep[i-1])*span[i-1]
             # apply dihedral (translatation)
-            self.pts[i][:, 2] = self.pts[i][:, 2] + sum(np.tan(dihedral[0:i-1])*span[0:i-1])
+            self.pts[i][:, 2] = self.pts[i][:, 2] + sum(np.tan(dihedral[0:i])*span[0:i])
         for i in range(0, self.n):
             # apply offset
             self.pts[i][:, 0] += offset[0] # x
