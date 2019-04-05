@@ -215,7 +215,7 @@ class Wing:
             file.write('// -- Airfoil {0:d}\n'.format(i))
             for j in range(0, self.linaN[i].shape[0]-1):
                 file.write('Spline({0:d}) = {{'.format(self.linaN[i][j]))
-                for k in range(self.sptsNg[i][j], self.sptsNg[i][j+1]-1):
+                for k in range(self.sptsNg[i][j], self.sptsNg[i][j+1]):
                     file.write('{0:d}, '.format(k))
                 file.write('{0:d}'.format(self.sptsNg[i][j+1]))
                 file.write('};\n')
