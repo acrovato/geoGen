@@ -30,5 +30,5 @@ integrations:
     - integrationName: slack   
       type: slack
       recipients:
-        - "#geogen"
+        - "#others"
 
