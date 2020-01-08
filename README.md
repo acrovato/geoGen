@@ -18,7 +18,9 @@ GeoGen currently supports the following configurations:
   - [ ] Generic fuselage
   - [ ] Horizontal tail
   - [ ] Multibody (e.g. several isolated wings)
-GeoGen was primarly designed to be used with [SU2](https://github.com/su2code/SU2) and [waves](https://github.com/ulgltas/waves), but any solver interfaced with [gmsh](http://gmsh.info/) can be used!
+
+
+GeoGen was primarly designed to be used with [SU2](https://github.com/su2code/SU2) and [waves](https://gitlab.uliege.be/am-dept/waves), but any solver interfaced with [gmsh](http://gmsh.info/) can be used!
 
 ### Cite us!
 If you use this work, please acknowledge the authors:  
@@ -35,7 +37,9 @@ Note that the extensions (.py and .geo) are automatically handled by the code an
 If no output file is provided, a workspace directory will be created and the geometry will be stored inside as grid.geo.
 
 The geometry is generated from a python file containing a dictionary of parameters. Examples are given in [config](config/) and the main options are summurized hereunder.
+
 **Parameters**
+
 Wing definition:
  - airfPath: relative path to the airfoils directory
  - airfName: array (size: nP+1) of names of file containing airfoil (Selig formatted) coordinates
@@ -47,10 +51,16 @@ Wing definition:
  - rootChord: root chord (scalar) of the wing
  - offset: array of x and z offset (size: 2) applied to the leading edge of the root section
  - coWingtip: boolean, True for cutoof wingtip, Fasle for rounded wingtip (not supported yet)
+
+
 Domain definition:
  - domType: string, box for box-shaped domain or shpere for shperical-shaped domain
+
+
 if domain type is shpere, typical for Euler equations:
  - rSphere: radius of the sphere (scalar)
+
+
 if domain type is a box (a wake will then be defined), typically for potential equations:
  - xoBox: x-coordinate (scalar) of the origin of the box 
  - xfBox: x-coordinate (scalar) of the end of the box
