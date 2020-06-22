@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 ''' 
-Copyright 2019 University of Liege
+Copyright 2020 University of Liege
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -133,8 +133,8 @@ class Wing:
     def read(self,fname):
         """Read data from file and stroe in matrix
         """
-        _file = file(fname)
-        label = _file.next().split(',')
+        _file = open(fname, 'r')
+        label = next(_file).split(',')
         _file.close()
         data = np.loadtxt(fname, skiprows=1)
         return data
@@ -256,14 +256,16 @@ class Wing:
         for i in range(0, self.n-1):
             for j in range(0, 3):
                 file.write('{0:d},'.format(self.surN[i][j]))
-        file.seek(-1, os.SEEK_END)
+        file.seek(0, os.SEEK_END) # first seek end of file; f.seek(0, 2) is legal
+        file.seek(file.tell() - 1, os.SEEK_SET) # then go backward
         file.truncate()
         file.write('};\n')
         file.write('Physical Surface("wing_") = {')
         for i in range(0, self.n-1):
             for j in range(3, 6):
                 file.write('{0:d},'.format(self.surN[i][j]))
-        file.seek(-1, os.SEEK_END)
+        file.seek(0, os.SEEK_END)
+        file.seek(file.tell() - 1, os.SEEK_SET)
         file.truncate()
         file.write('};\n')
         file.write('\n')

@@ -1,6 +1,6 @@
 # GeoGen
 Adrien Crovato  
-ULiege, 2018-2019  
+ULiege, 2018-2020  
 
 [![Run Status](https://api.shippable.com/projects/5c98c1405142dd0007ecd6c0/badge?branch=master)]()
 
@@ -31,9 +31,8 @@ If you use this work, please acknowledge the authors:
 ## Usage
 The script is run through the command line:
 ```sh
-python geoGen.py -m path/to/config/file <-o path/to/output/file>
+python geoGen.py path/to/config/file.py <-o path/to/output/file.geo>
 ```
-Note that the extensions (.py and .geo) are automatically handled by the code and should to be provided in the path.
 If no output file is provided, a workspace directory will be created and the geometry will be stored inside as grid.geo.
 
 The geometry is generated from a python file containing a dictionary of parameters. Examples are given in [config](config/) and the main options are summurized hereunder.
