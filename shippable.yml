@@ -21,9 +21,9 @@ before_install:
   - sudo ln -s $PWD/gmsh-4.2.2-Linux64/bin/gmsh /usr/bin/gmsh
 
 script:
-  - python geoGen.py -m config/onera -o onera
+  - python geoGen.py config/onera.py -o onera.geo
   - gmsh -3 workspace/onera.geo -o workspace/onera.msh
-  - python geoGen.py -m config/rae -o rae
+  - python geoGen.py config/rae.py -o rae.geo
   - gmsh -3 workspace/rae.geo -o workspace/rae.msh
 
 integrations:
