@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 ''' 
-Copyright 2019 University of Liege
+Copyright 2020 University of Liege
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ class Tip:
         """Initialize data, define numbering
         """
         # build mean line
-        self.pts = [(np.zeros([(self.wing.pts[-1].shape[0]-3)/2,3]))]
+        self.pts = [(np.zeros([(self.wing.pts[-1].shape[0]-3)//2,3]))]
         for i in range(0, self.pts[0].shape[0]):
             self.pts[0][i,:] = np.array([0.5*(self.wing.pts[-1][1+i,0]+self.wing.pts[-1][-2-i,0]), self.wing.pts[-1][0,1], 0.5*(self.wing.pts[-1][1+i,2]+self.wing.pts[-1][-2-i,2])])
 
@@ -142,13 +142,15 @@ class CTip(Tip):
         file.write('Physical Surface("wing") += {')
         for j in range(0, 3):
             file.write('{0:d},'.format(self.surN[0][j]))
-        file.seek(-1, os.SEEK_END)
+        file.seek(0, os.SEEK_END)
+        file.seek(file.tell() - 1, os.SEEK_SET)
         file.truncate()
         file.write('};\n')
         file.write('Physical Surface("wing_") += {')
         for j in range(3, 6):
             file.write('{0:d},'.format(self.surN[0][j]))
-        file.seek(-1, os.SEEK_END)
+        file.seek(0, os.SEEK_END)
+        file.seek(file.tell() - 1, os.SEEK_SET)
         file.truncate()
         file.write('};\n')
         file.write('\n')

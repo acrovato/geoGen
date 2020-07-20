@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 ''' 
-Copyright 2019 University of Liege
+Copyright 2020 University of Liege
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ def main(_module, _output):
 
     # Switch to workspace and write
     createWdir()
-    outFile = _output + '.geo'
+    outFile = _output
     # misc
     writeHeader(outFile, _module)
     wing.writeInfo(outFile)
@@ -86,7 +86,7 @@ def main(_module, _output):
     printInfo(outFile)   
 
     # eof
-    print ''
+    print('')
 
 def getConfig(_module):
     # Get prarmeters from config file
@@ -103,7 +103,7 @@ def createWdir():
     import os
     wdir = os.path.join(os.getcwd(), 'workspace')
     if not os.path.isdir(wdir):
-        print "creating", wdir
+        print("creating", wdir)
         os.makedirs(wdir)
     os.chdir(wdir)
 
@@ -137,22 +137,22 @@ def printInfo(fname):
     """Print info
     """
     import os
-    print '*' * 79
-    print '* geoGen'
-    print '* Adrien Crovato'
-    print '* ULiege, 2018-2019'
-    print '* Distributed under Apache license 2.0'
-    print '*' * 79
-    print os.path.abspath(os.path.join(os.getcwd(), fname)), 'has been successfully written!'
-    print 'Visual file check in gmsh recommended before further use!'
-    print '*' * 79
+    print('*' * 79)
+    print('* geoGen')
+    print('* Adrien Crovato')
+    print('* ULiege, 2018-2020')
+    print('* Distributed under Apache license 2.0')
+    print('*' * 79)
+    print(os.path.abspath(os.path.join(os.getcwd(), fname)), 'has been successfully written!')
+    print('Visual file check in gmsh recommended before further use!')
+    print('*' * 79)
 
 if __name__ == "__main__":
     # Arguments parser
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', dest='mod', help='input config module (w/o .py)')
-    parser.add_argument('-o', dest='out', help='output geo file (w/o .geo)', default='grid')
+    parser.add_argument('file', help='input config .py file')
+    parser.add_argument('-o', dest='out', help='output .geo file', default='grid.geo')
     args = parser.parse_args()
 
-    main(args.mod, args.out)
+    main(args.file[:-3], args.out)

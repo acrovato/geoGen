@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 ''' 
-Copyright 2019 University of Liege
+Copyright 2020 University of Liege
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -149,13 +149,15 @@ class Wake(GWake):
         file.write('Physical Line("teTip") = {{{0:d},'.format(self.linN[1][self.wing.n-1]))
         for i in range(0, self.wing.n-1):
             file.write('{0:d},'.format(self.wing.linpN[i][0]))
-        file.seek(-1, os.SEEK_END)
+        file.seek(0, os.SEEK_END)
+        file.seek(file.tell() - 1, os.SEEK_SET)
         file.truncate()
         file.write('};\n')
         file.write('Physical Surface("wake") = {')
         for j in range(0, self.wing.n-1):
             file.write('{0:d},'.format(self.surN[0][j]))
-        file.seek(-1, os.SEEK_END)
+        file.seek(0, os.SEEK_END)
+        file.seek(file.tell() - 1, os.SEEK_SET)
         file.truncate()
         file.write('};\n')
         file.write('\n')

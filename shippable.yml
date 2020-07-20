@@ -2,7 +2,7 @@ dist: xenial
 sudo: required
 language: python
 python:
-  - "2.7"
+  - "3.5"
 
 branches:
   only:
@@ -10,19 +10,20 @@ branches:
     - ci_shippable
 
 before_install:
+  - sudo apt-get update
   # python
-  - sudo apt-get install -qq python-dev python-numpy
+  - sudo apt-get install -qq python3-dev python3-numpy
   # add dist-package to pythonpath (for numpy)
-  - export PYTHONPATH="${PYTHONPATH}:/usr/lib/python2.7/dist-packages"
+  - export PYTHONPATH="${PYTHONPATH}:/usr/lib/python3/dist-packages"
   # gmsh
   - wget http://gmsh.info/bin/Linux/gmsh-4.2.2-Linux64.tgz
   - tar -xzvf gmsh-4.2.2-Linux64.tgz
   - sudo ln -s $PWD/gmsh-4.2.2-Linux64/bin/gmsh /usr/bin/gmsh
 
 script:
-  - python geoGen.py -m config/onera -o onera
+  - python geoGen.py config/onera.py -o onera.geo
   - gmsh -3 workspace/onera.geo -o workspace/onera.msh
-  - python geoGen.py -m config/rae -o rae
+  - python geoGen.py config/rae.py -o rae.geo
   - gmsh -3 workspace/rae.geo -o workspace/rae.msh
 
 integrations:
@@ -30,5 +31,5 @@ integrations:
     - integrationName: slack   
       type: slack
       recipients:
-        - "#geogen"
+        - "#others"
 
